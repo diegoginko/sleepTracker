@@ -15,3 +15,38 @@
  */
 
 package com.example.android.trackmysleepquality.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+@Database(entities = [SleepNight::class], version = 1,  exportSchema = false)
+abstract class SleepDatabase : RoomDatabase(){
+
+    //Declaro el DAO
+    abstract val sleepDatabaseDao: SleepDatabaseDao
+
+    companion object {
+        //La anotacion volatile es para que no la cachee
+        @Volatile
+        private var INSTANCE: SleepDatabase? = null //Se crea una unica instancia
+
+        fun getInstance(context: Context): SleepDatabase {
+            synchronized(this) {
+                var instance = INSTANCE
+                if (instance == null) {
+                    instance = Room.databaseBuilder(
+                            context.applicationContext,
+                            SleepDatabase::class.java,
+                            "sleep_history_database"
+                    )
+                    .fallbackToDestructiveMigration() //no migra la DB en caso de cambio, la reconstruye y se pierde info
+                    .build()
+                }
+                return instance
+            }
+        }
+    }
+
+}
